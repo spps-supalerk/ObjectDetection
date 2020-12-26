@@ -9,6 +9,6 @@ Most of code are kept in ".ipynb" to show how each line of code works.</br>
  <li> Class material of Image Analytics and Computer Vision By Asst.Prof.Thitirat Siriborvornratanakul, Ph.D.</li>
  
 ## list of topics in this repo are list below </br>
-<li> CountObjectInImage.ipynb : Object detection with counting frequency of object </li>
-<li> CountObjectInImage.py : Method of counting frequenct of object </li>
+<li> CountObjectImage.ipynb : Object detection with counting frequency of object </li>
+<li> CountObjectImage.py : Class of counting frequenct of object </li>
 
