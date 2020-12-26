@@ -8,8 +8,8 @@ Most of code are kept in ".ipynb" to show how each line of code works.</br>
  <li> https://www.learnopencv.com/deep-learning-based-object-detection-using-yolov3-with-opencv-python-c/</li>
  <li> Class material of Image Analytics and Computer Vision By Asst.Prof.Thitirat Siriborvornratanakul, Ph.D.</li>
 </br>
-</br>
+<ul>
 ## list of topics in this repo are list below </br>
 <li> CountObjectInImage.ipynb : Object detection with counting frequency of object </li>
 <li> CountObjectInImage.py : Method of counting frequenct of object </li>
-  
+</ul>
