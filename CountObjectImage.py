@@ -17,15 +17,13 @@ class CountObjectImage():
         self.confidences = None
         self.classIDs = None
         self.colors = np.random.randint(0, 255, size=(len(self.labels), 3), dtype=np.uint8)
+        self.olayer_name = [ self.net.getLayerNames()[i[0] - 1] for i in self.net.getUnconnectedOutLayers()]
+        self.object_count_lst = []
     
     def fit(self, img):
 
         # get image
         self.img = img
-
-        # Determine only the output layer names that we need from YOLO
-        olayer_name = self.net.getLayerNames()
-        olayer_name = [ olayer_name[i[0] - 1] for i in self.net.getUnconnectedOutLayers()]
 
         # Be careful, each model requires different preprocessing!!!
         h,w = self.img.shape[:2]
@@ -35,7 +33,7 @@ class CountObjectImage():
                                     swapRB=True, crop=False)
         # Pass the blob to the network
         self.net.setInput(blob)
-        outputs = self.net.forward(olayer_name)
+        outputs = self.net.forward(self.olayer_name)
 
         # Lists to store detected bounding boxes, confidences and classIDs
         self.boxes = []
@@ -82,6 +80,24 @@ class CountObjectImage():
         # Return dictionary of obj count
         return object_count
 
+    def count_obj_batch(self, imgs:list ):
+        
+        for img in imgs:
+            self.fit(img)
+            obj_dic = self.count_obj()
+            self.object_count_lst.append(obj_dic)
+        return self.object_count_lst
+
+    def sum_count_batch(self):
+        dic_total_obj = {}
+        for obj_dic in self.object_count_lst:
+            for obj, c in obj_dic.items():
+                if obj in dic_total_obj:
+                    dic_total_obj[obj] += c
+                else:
+                    dic_total_obj[obj] = c
+        return dic_total_obj
+
     def image_show(self, figsize=(12,8), title = 'Image After Doing Object Detection\n', fontsize=25):
 
         # Non-maxima suppression to suppress weak, overlapping bounding boxes
@@ -107,12 +123,10 @@ class CountObjectImage():
         plt.show()
 
 if __name__ == "__main__":
-    # load image
-    # print(cv2.__version__)
-    dir_img = r'.\image_test.jpg'
-    img = cv2.imread(dir_img)
-    # plt.imshow(cv2.cvtColor(img, cv2.COLOR_BGR2RGB))
-    # plt.show()  
+
+    # ------------------------------------------------------------------------------------------
+    # Initial
+    # ------------------------------------------------------------------------------------------
 
     # Load labels of model
     labels = open("./YOLO-COCO/coco.names").read().strip().split("\n")
@@ -121,10 +135,32 @@ if __name__ == "__main__":
     net = cv2.dnn.readNetFromDarknet("./YOLO-COCO/yolov3.cfg","./YOLO-COCO/yolov3.weights")
     net.setPreferableBackend(cv2.dnn.DNN_BACKEND_OPENCV)
     net.setPreferableTarget(cv2.dnn.DNN_TARGET_CPU) 
-
-    # Import class CountObjectImg
+    # load image
+    dir_img = r'.\image_test.jpg'
+    dir_imgs = [r'.\image_test.jpg', r'.\image_test2.jpg']
+    img = cv2.imread(dir_img)
+    imgs = [ cv2.imread(i) for i in dir_imgs]
+    # ------------------------------------------------------------------------------------------
+    # Single image process
+    # ------------------------------------------------------------------------------------------
+    
     co = CountObjectImage(net = net, labels = labels)
     co.fit(img)
-    print(co.count_obj())
-    co.image_show()
+    dic_obj = co.count_obj()
+    print('----- Result of Single Image Process -----------------------------------------------')
+    print(f' Object list : {dic_obj}')
+    print('-'*84)
+    # co.image_show()
+    
+    # ------------------------------------------------------------------------------------------
+    # Batch Process
+    # ------------------------------------------------------------------------------------------
+    
+    co = CountObjectImage(net = net, labels = labels)
+    result = co.count_obj_batch(imgs = imgs)
+    total_obj = co.sum_count_batch()
+    print('-----Result of Batch Process--------------------------------------------------------')
+    print(f' Object list : {result}')
+    print(f' Total Occured Object : {total_obj}')
+    print('-'*84)
     
